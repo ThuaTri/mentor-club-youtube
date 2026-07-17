@@ -10,6 +10,9 @@ on:
   workflow_dispatch:
     inputs:
       record_id: { description: "record_id 1 dòng (bỏ trống = quét Chờ đăng)", required: false }
+  schedule:
+    # 30 phút, 16 giờ UTC = 23:30 giờ Việt Nam (UTC+7) mỗi ngày -> đăng 1 video "Chờ đăng".
+    - cron: '30 16 * * *'
 
 jobs:
   run:
@@ -35,4 +38,6 @@ jobs:
           YT_PRIVACY: ${{ vars.YT_PRIVACY }}
           # ---- Nút bấm Lark gửi kèm record_id ----
           RECORD_ID: ${{ github.event.client_payload.record_id || inputs.record_id }}
-        run: node ".claude/skills/hmh-AIOS-dang-video-youtube/scripts/post-video-youtube.mjs"
+        # --limit 1: mỗi lần chỉ đăng 1 video "Chờ đăng" (dùng cho lịch cron mỗi ngày).
+        # Nút bấm Lark gửi RECORD_ID -> đăng đúng dòng đó, không bị --limit ảnh hưởng.
+        run: node ".claude/skills/hmh-AIOS-dang-video-youtube/scripts/post-video-youtube.mjs" --limit 1
