@@ -11,8 +11,8 @@ on:
     inputs:
       record_id: { description: "record_id 1 dòng (bỏ trống = quét Chờ đăng)", required: false }
   schedule:
-    # 30 phút, 16 giờ UTC = 23:30 giờ Việt Nam (UTC+7) mỗi ngày -> đăng 1 video "Chờ đăng".
-    - cron: '30 16 * * *'
+    # 0 phút, 23 giờ UTC = 06:00 giờ Việt Nam (UTC+7) sáng mỗi ngày -> đăng 1 video "Chờ đăng".
+    - cron: '0 23 * * *'
 
 jobs:
   run:
