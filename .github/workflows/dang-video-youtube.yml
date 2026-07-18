@@ -11,8 +11,9 @@ on:
     inputs:
       record_id: { description: "record_id 1 dòng (bỏ trống = quét Chờ đăng)", required: false }
   schedule:
-    # 0 phút, 23 giờ UTC = 06:00 giờ Việt Nam (UTC+7) sáng mỗi ngày -> đăng 1 video "Chờ đăng".
-    - cron: '0 23 * * *'
+    # 23:05 UTC = 06:05 sáng giờ VN (UTC+7). Cố ý tránh phút :00 (giờ tròn) vì đó là lúc
+    # GitHub Actions đông nhất -> lịch bị dồn, chạy trễ. Phút lẻ chạy sát giờ hơn nhiều.
+    - cron: '5 23 * * *'
 
 jobs:
   run:
