@@ -11,9 +11,10 @@ on:
     inputs:
       record_id: { description: "record_id 1 dòng (bỏ trống = quét Chờ đăng)", required: false }
   schedule:
-    # 23:05 UTC = 06:05 sáng giờ VN (UTC+7). Cố ý tránh phút :00 (giờ tròn) vì đó là lúc
-    # GitHub Actions đông nhất -> lịch bị dồn, chạy trễ. Phút lẻ chạy sát giờ hơn nhiều.
-    - cron: '5 23 * * *'
+    # Chạy SỚM lúc 21:10 UTC = 04:10 sáng giờ VN (dư ~2 tiếng đệm dù GitHub chạy trễ).
+    # Video được upload dạng private + hẹn YouTube công khai đúng PUBLISH_AT_UTC (23:00 UTC = 06:00 VN)
+    # -> hiện công khai CHÍNH XÁC 06:00, không phụ thuộc độ trễ của cron.
+    - cron: '10 21 * * *'
 
 jobs:
   run:
@@ -37,6 +38,7 @@ jobs:
           YT_OAUTH_CLIENT_ID: ${{ vars.YT_OAUTH_CLIENT_ID }}
           YT_CATEGORY_ID: ${{ vars.YT_CATEGORY_ID }}
           YT_PRIVACY: ${{ vars.YT_PRIVACY }}
+          PUBLISH_AT_UTC: ${{ vars.PUBLISH_AT_UTC }}
           # ---- Nút bấm Lark gửi kèm record_id ----
           RECORD_ID: ${{ github.event.client_payload.record_id || inputs.record_id }}
         # --limit 1: mỗi lần chỉ đăng 1 video "Chờ đăng" (dùng cho lịch cron mỗi ngày).

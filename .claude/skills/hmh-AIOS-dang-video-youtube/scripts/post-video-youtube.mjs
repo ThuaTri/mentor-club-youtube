@@ -28,6 +28,7 @@ CFG.oauthClientSecret = E.YT_OAUTH_CLIENT_SECRET  || CFG.oauthClientSecret;
 CFG.oauthRefreshToken = E.YT_OAUTH_REFRESH_TOKEN  || CFG.oauthRefreshToken;
 CFG.defaultCategoryId = E.YT_CATEGORY_ID          || CFG.defaultCategoryId || "22";
 CFG.defaultPrivacy    = E.YT_PRIVACY              || CFG.defaultPrivacy || "private";
+CFG.publishAtUtc      = E.PUBLISH_AT_UTC          || CFG.publishAtUtc || ""; // "HH:MM" UTC -> hẹn YouTube công khai đúng giờ (cho lịch cron)
 
 const LIMIT = (() => { const i = process.argv.indexOf("--limit"); return i > -1 ? parseInt(process.argv[i + 1], 10) : 0; })();
 const DRY = process.argv.includes("--dry-run");
@@ -247,6 +248,20 @@ async function main() {
       const status = { privacyStatus: privacy, selfDeclaredMadeForKids: false };
       const schedMs = f["Lịch đăng"];
       if (schedMs) { status.privacyStatus = "private"; status.publishAt = new Date(schedMs).toISOString(); }
+      // Đăng ĐÚNG GIỜ hằng ngày: nếu đặt PUBLISH_AT_UTC (vd "23:00" = 06:00 VN), dòng không tự set
+      // "Lịch đăng", và đây là lượt quét hàng đợi (KHÔNG phải nút bấm record_id) -> upload private +
+      // hẹn YouTube công khai đúng giờ đó (chính xác từng phút, không phụ thuộc độ trễ của cron GitHub).
+      else if (!RECORD_ID && CFG.publishAtUtc) {
+        const m = /^(\d{1,2}):(\d{2})$/.exec(String(CFG.publishAtUtc).trim());
+        if (m) {
+          const now = new Date();
+          const at = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), +m[1], +m[2], 0));
+          if (at.getTime() <= now.getTime()) at.setUTCDate(at.getUTCDate() + 1); // đã qua giờ hôm nay -> mai
+          status.privacyStatus = "private";
+          status.publishAt = at.toISOString();
+          console.log(`  ⏰ Hẹn công khai lúc ${status.publishAt} (= ${CFG.publishAtUtc} UTC)`);
+        }
+      }
 
       console.log("  ↑ đang upload lên YouTube...");
       const videoId = await uploadToYouTube(accessToken, tmp, size, snippet, status);
